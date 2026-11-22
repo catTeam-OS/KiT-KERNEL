@@ -1,20 +1,23 @@
 # Prerequisites
 *.d
 
-# Object files
+# Object files and kernel modules
 *.o
 *.ko
 *.obj
-*.elf
+*.mod*
+*.cmd
 
-# Linker output
+# Linker and debug output
+*.elf
 *.ilk
 *.map
 *.exp
-
-# Precompiled Headers
-*.gch
-*.pch
+*.dSYM/
+*.su
+*.idb
+*.pdb
+*.dwo
 
 # Libraries
 *.lib
@@ -22,13 +25,13 @@
 *.la
 *.lo
 
-# Shared objects (inc. Windows DLLs)
+# Shared libraries
 *.dll
 *.so
 *.so.*
 *.dylib
 
-# Executables
+# Executables and generated images
 *.exe
 *.out
 *.app
@@ -36,20 +39,18 @@
 *.x86_64
 *.hex
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
+# Kernel module build output
 .tmp_versions/
 modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
 
-# debug information files
-*.dwo
+# Common build directories
+/build/
+/dist/
+/out/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
