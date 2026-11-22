@@ -2,6 +2,7 @@
 ::sysinit:/bin/mount -t proc proc /proc
 ::sysinit:/bin/mount -t sysfs sysfs /sys
 ::sysinit:/bin/hostname -F /etc/hostname
+::sysinit:/etc/boot-banner
 ::respawn:/bin/cttyhack /bin/sh
 ::ctrlaltdel:/bin/reboot
 ::shutdown:/bin/umount -a -r
