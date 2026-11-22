@@ -1,0 +1,58 @@
+name: KiT Kernel Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build x86_64 Kernel
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout KiT
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            bc \
+            bison \
+            flex \
+            libelf-dev \
+            libssl-dev \
+            dwarves \
+            zstd
+
+      - name: Load KiT configuration
+        run: |
+          cp kernel/config/kit_defconfig kernel/source/linux/.config
+
+      - name: Resolve kernel configuration
+        run: |
+          make -C kernel/source/linux olddefconfig
+
+      - name: Build kernel and modules
+        run: |
+          make -C kernel/source/linux -j"$(nproc)" bzImage modules
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kit-kernel-x86_64
+          path: |
+            kernel/source/linux/arch/x86/boot/bzImage
+            kernel/source/linux/System.map
+            kernel/source/linux/.config
+          if-no-files-found: error
