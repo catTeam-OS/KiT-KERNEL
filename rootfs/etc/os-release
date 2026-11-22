@@ -1,0 +1,7 @@
+NAME="KiT Linux"
+PRETTY_NAME="KiT Linux"
+ID=kit
+ID_LIKE=linux
+VERSION="0.1.0"
+VERSION_ID="0.1.0"
+HOME_URL="https://github.com/catTeam-OS/KiT-KERNEL"

@@ -1,0 +1,17 @@
+#!/bin/sh
+
+case "$1" in
+    -r)
+        exec /bin/reboot
+        ;;
+    -h)
+        exec /bin/halt
+        ;;
+    -P)
+        exec /bin/poweroff
+        ;;
+    *)
+        echo "Usage: shutdown {-r|-h|-P} now"
+        exit 1
+        ;;
+esac

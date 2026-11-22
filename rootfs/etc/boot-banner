@@ -1,0 +1,7 @@
+#!/bin/sh
+clear
+echo "Welcome to KiT Linux!"
+echo "Kernel: $(uname -r)"
+echo
+echo "Your own little Linux environment."
+echo
