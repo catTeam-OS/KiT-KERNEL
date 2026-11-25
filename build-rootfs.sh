@@ -25,6 +25,7 @@ cp -a "$PROJECT_DIR/rootfs/." "$ROOTFS_DIR/"
 cp "$BUSYBOX_BIN" "$ROOTFS_DIR/bin/busybox"
 
 while IFS= read -r applet; do
+    [[ "$applet" == "busybox" ]] && continue
     ln -sfn busybox "$ROOTFS_DIR/bin/$applet"
 done < <("$ROOTFS_DIR/bin/busybox" --list)
 
