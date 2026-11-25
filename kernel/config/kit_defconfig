@@ -4189,7 +4189,7 @@ CONFIG_DRM_CLIENT_SELECTION=y
 #
 # Supported DRM clients
 #
-# CONFIG_DRM_FBDEV_EMULATION is not set
+CONFIG_DRM_FBDEV_EMULATION=y
 # CONFIG_DRM_CLIENT_LOG is not set
 CONFIG_DRM_CLIENT_DEFAULT=""
 # end of Supported DRM clients
@@ -4308,7 +4308,7 @@ CONFIG_DRM_RADEON=m
 #
 # Drivers for system framebuffers
 #
-# CONFIG_DRM_EFIDRM is not set
+CONFIG_DRM_EFIDRM=y
 # CONFIG_DRM_SIMPLEDRM is not set
 # CONFIG_DRM_VESADRM is not set
 # end of Drivers for system framebuffers
@@ -4353,6 +4353,7 @@ CONFIG_DRM_PANEL_ORIENTATION_QUIRKS=y
 # Frame buffer Devices
 #
 # CONFIG_FB is not set
+CONFIG_FRAMEBUFFER_CONSOLE=y
 # end of Frame buffer Devices
 
 #
