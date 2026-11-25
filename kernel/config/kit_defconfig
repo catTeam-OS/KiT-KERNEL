@@ -3742,12 +3742,12 @@ CONFIG_X86_PKG_TEMP_THERMAL=m
 #
 # ACPI INT340X thermal drivers
 #
-# CONFIG_INT340X_THERMAL is not set
+CONFIG_INT340X_THERMAL=m
 # end of ACPI INT340X thermal drivers
 
 # CONFIG_INTEL_PCH_THERMAL is not set
 # CONFIG_INTEL_TCC_COOLING is not set
-# CONFIG_INTEL_HFI_THERMAL is not set
+CONFIG_INTEL_HFI_THERMAL=y
 # end of Intel thermal drivers
 
 CONFIG_WATCHDOG=y
