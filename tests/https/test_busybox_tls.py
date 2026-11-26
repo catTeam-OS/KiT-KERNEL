@@ -27,7 +27,8 @@ class LocalTLSServer:
             self.context.minimum_version = ssl.TLSVersion.TLSv1_2
             self.context.maximum_version = ssl.TLSVersion.TLSv1_2
             self.context.set_ciphers(cipher)
-            self.context.set_ecdh_curve(group)
+            if group is not None:
+                self.context.set_ecdh_curve(group)
             self.context.load_cert_chain(cert, key)
         self.listener = socket.socket()
         self.listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -173,7 +174,7 @@ def main():
             cert,
             key,
             "ECDHE-ECDSA-AES128-GCM-SHA256",
-            "X25519",
+            None,
         )
         assert_https_download(
             args.busybox,
@@ -187,7 +188,7 @@ def main():
             cert,
             key,
             "ECDHE-ECDSA-AES128-SHA256",
-            "X25519",
+            None,
         )
 
     assert_timeout_is_not_a_crash(args.busybox)
