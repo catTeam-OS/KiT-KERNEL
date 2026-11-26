@@ -85,3 +85,17 @@ jobs:
         run: |
           python3 tests/https/test_busybox_tls.py \
             --busybox "$RUNNER_TEMP/busybox/busybox"
+
+      - name: Generate BusyBox SHA-256 checksum
+        run: |
+          cd "$RUNNER_TEMP/busybox"
+          sha256sum busybox > busybox.sha256
+
+      - name: Upload static BusyBox artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kit-busybox-1.37.0-static
+          path: |
+            ${{ runner.temp }}/busybox/busybox
+            ${{ runner.temp }}/busybox/busybox.sha256
+          retention-days: 14
