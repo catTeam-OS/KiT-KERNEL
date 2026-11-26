@@ -1,0 +1,66 @@
+--- a/networking/tls.c
++++ b/networking/tls.c
+@@ -2102,13 +2102,17 @@
+ 	//    server_write_IV[SecurityParameters.fixed_iv_length]
+ 	{
+ 		uint8_t tmp64[64];
++		uint8_t key_block[2 * (TLS_MAX_MAC_SIZE + TLS_MAX_KEY_SIZE + TLS_MAX_IV_SIZE)];
++		uint8_t *p;
++		unsigned key_block_size;
+ 
+ 		/* make "server_rand32 + client_rand32" */
+ 		memcpy(&tmp64[0] , &tls->hsd->client_and_server_rand32[32], 32);
+ 		memcpy(&tmp64[32], &tls->hsd->client_and_server_rand32[0] , 32);
+ 
++		key_block_size = 2 * (tls->MAC_size + tls->key_size + tls->IV_size);
+ 		prf_hmac_sha256(/*tls,*/
+-			tls->client_write_MAC_key, 2 * (tls->MAC_size + tls->key_size + tls->IV_size),
++			key_block, key_block_size,
+ 			// also fills:
+ 			// server_write_MAC_key[]
+ 			// client_write_key[]
+@@ -2119,10 +2123,22 @@
+ 			"key expansion",
+ 			tmp64, 64
+ 		);
+-		tls->client_write_key = tls->client_write_MAC_key + (2 * tls->MAC_size);
+-		tls->server_write_key = tls->client_write_key + tls->key_size;
+-		tls->client_write_IV = tls->server_write_key + tls->key_size;
+-		tls->server_write_IV = tls->client_write_IV + tls->IV_size;
++		p = key_block;
++		memcpy(tls->client_write_MAC_key, p, tls->MAC_size);
++		p += tls->MAC_size;
++		memcpy(tls->server_write_MAC_k__, p, tls->MAC_size);
++		p += tls->MAC_size;
++		memcpy(tls->client_write_k__, p, tls->key_size);
++		p += tls->key_size;
++		memcpy(tls->server_write_k__, p, tls->key_size);
++		p += tls->key_size;
++		memcpy(tls->client_write_I_, p, tls->IV_size);
++		p += tls->IV_size;
++		memcpy(tls->server_write_I_, p, tls->IV_size);
++		tls->client_write_key = tls->client_write_k__;
++		tls->server_write_key = tls->server_write_k__;
++		tls->client_write_IV = tls->client_write_I_;
++		tls->server_write_IV = tls->server_write_I_;
+ 		dump_hex("client_write_MAC_key:%s\n",
+ 			tls->client_write_MAC_key, tls->MAC_size
+ 		);
+--- a/networking/wget.c
++++ b/networking/wget.c
+@@ -396,9 +396,12 @@
+ #if ENABLE_FEATURE_WGET_TIMEOUT
+ static void alarm_handler(int sig UNUSED_PARAM)
+ {
+-	/* This is theoretically unsafe (uses stdio and malloc in signal handler) */
+-	if (G.die_if_timed_out)
+-		bb_simple_error_msg_and_die("download timed out");
++	static const char message[] = "wget: download timed out\n";
++
++	if (G.die_if_timed_out) {
++		(void)write(STDERR_FILENO, message, sizeof(message) - 1);
++		_exit(EXIT_FAILURE);
++	}
+ }
+ static void set_alarm(void)
+ {
