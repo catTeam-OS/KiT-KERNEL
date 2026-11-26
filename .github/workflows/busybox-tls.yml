@@ -1,0 +1,87 @@
+name: BusyBox TLS Regression
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/busybox-tls.yml"
+      - "busybox/**"
+      - "configs/busybox-1.37.0.config"
+      - "tests/https/test_busybox_tls.py"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/busybox-tls.yml"
+      - "busybox/**"
+      - "configs/busybox-1.37.0.config"
+      - "tests/https/test_busybox_tls.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build BusyBox 1.37.0 and test TLS
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout KiT
+        uses: actions/checkout@v4
+
+      - name: Install build and test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            bzip2 \
+            libc6-dev \
+            openssl \
+            patch \
+            python3
+
+      - name: Verify static libc dependencies
+        run: |
+          for lib in libm.a libresolv.a; do
+            path="$(gcc -print-file-name="$lib")"
+            test -f "$path" || {
+              echo "Missing static dependency: $lib ($path)" >&2
+              exit 1
+            }
+          done
+
+      - name: Fetch and verify upstream BusyBox 1.37.0
+        run: |
+          mkdir -p "$RUNNER_TEMP/busybox"
+          curl --fail --location --silent --show-error \
+            https://busybox.net/downloads/busybox-1.37.0.tar.bz2 \
+            --output "$RUNNER_TEMP/busybox.tar.bz2"
+          echo "3311dff32e746499f4df0d5df04d7eb396382d7e108bb9250e7b519b837043a4  $RUNNER_TEMP/busybox.tar.bz2" \
+            | sha256sum --check
+          tar -xjf "$RUNNER_TEMP/busybox.tar.bz2" \
+            --strip-components=1 -C "$RUNNER_TEMP/busybox"
+
+      - name: Apply KiT BusyBox patches and configuration
+        run: |
+          patch --directory="$RUNNER_TEMP/busybox" -p1 \
+            < busybox/patches/0001-tls-use-bounded-key-block-and-safe-wget-timeout.patch
+          cp configs/busybox-1.37.0.config "$RUNNER_TEMP/busybox/.config"
+          cd "$RUNNER_TEMP/busybox"
+          yes '' | make oldconfig
+
+      - name: Build statically linked BusyBox
+        run: |
+          make -C "$RUNNER_TEMP/busybox" -j2
+          test -x "$RUNNER_TEMP/busybox/busybox"
+          "$RUNNER_TEMP/busybox/busybox" bbconfig \
+            | grep -q '^CONFIG_STATIC=y$'
+          "$RUNNER_TEMP/busybox/busybox" bbconfig \
+            | grep -q '^CONFIG_TLS=y$'
+          "$RUNNER_TEMP/busybox/busybox" bbconfig \
+            | grep -q '^CONFIG_FEATURE_WGET_HTTPS=y$'
+
+      - name: Run local TLS regression tests
+        run: |
+          python3 tests/https/test_busybox_tls.py \
+            --busybox "$RUNNER_TEMP/busybox/busybox"
